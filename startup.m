@@ -9,11 +9,6 @@ if OCT && numel(mydir)==2
   if strcmp(mydir,'./'), mydir = [pwd,mydir(2:end)]; end
 end                 % OCTAVE 3.0.x relative, MATLAB and newer have absolute path
 
-addpath(mydir(1:end-1))
-addpath([mydir,'cov'])
-addpath([mydir,'inf'])
-addpath([mydir,'lik'])
-addpath([mydir,'mean'])
-addpath([mydir,'util'])
+addpath(genpath(mydir))
 
 clear me mydir
