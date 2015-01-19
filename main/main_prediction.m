@@ -3,33 +3,6 @@ clear all
 close all
 
 precision = 15;
-
-%% path
-addpath('../util/');
-
-% mean function
-addpath('../mean');
-
-% covariance function
-addpath('../cov/covSparseiso');
-
-addpath('../cov/covisoDerObsUnstable');
-addpath('../cov/covisoDerObsUnstable/covSEisoDerObsUnstable');
-addpath('../cov/covisoDerObsUnstable/covMaterniso3DerObsUnstable');
-addpath('../cov/covisoDerObsUnstable/covSparseisoDerObsUnstable');
-
-addpath('../cov/covDerObs');
-addpath('../cov/covDerObs/covSEisoDerObs');
-addpath('../cov/covDerObs/covMaterniso3DerObs');
-addpath('../cov/covDerObs/covSparseisoDerObs');
-
-% likelihood function
-addpath('../lik');
-
-% inference method
-addpath('../inf');
-
-
 %% data
 % function
 f  = @(x) 2*sin(3*pi*x) - 2*x.^3 + x.^2 -3*x + 1 - sqrt(x) - cos(10*pi*x);
@@ -49,7 +22,7 @@ dy_dx = [41.704618124666638; -28.757549228476215; 14.122022625746855; -52.574386
  
 % plot
 figure('position', [0, 0, 1600, 400]);
-subplot(1, 4, 1);
+subplot(1, 3, 1);
 hold on
 delta_x = 0.03;
 plot(xs, ys, 'k-');
@@ -90,7 +63,7 @@ disp(['dnlZ1.lik.sigma_n = ',   num2str(dnlZ1.lik(1), precision)]);
 [dummy, dummy, fmu, fs2] = gp(hyp1, inf_method, mean_func, cov_func, lik_func, x, y, xs);
 
 % plot
-subplot(1, 4, 2);
+subplot(1, 3, 2);
 hold on;
 ff = [fmu+2*sqrt(fs2); flipdim(fmu-2*sqrt(fs2),1)]; 
 fill([xs; flipdim(xs,1)], ff, [7 7 7]/8)
@@ -143,73 +116,7 @@ disp(['dnlZ2.lik.sigma_nd = ',  num2str(dnlZ2.lik(2), precision)]);
 [dummy, dummy, fmu, fs2] = gp(hyp2, inf_method, mean_func, cov_func, lik_func, xxd, yyd, xs);
 
 % plot
-subplot(1, 4, 3);
-hold on;
-ff = [fmu+2*sqrt(fs2); flipdim(fmu-2*sqrt(fs2),1)]; 
-fill([xs; flipdim(xs,1)], ff, [7 7 7]/8)
-plot(xs, fmu, 'b-');
-plot(xs, ys, 'k-');
-plot(x, y, 'or');
-axis([0, 1, min(ys)-0.1, max(ys)+0.1]);
-
-% print
-print_matrix_for_reference(yyd, 'yyd');
-print_matrix_for_reference(fmu, 'fmu', 10);
-print_matrix_for_reference(fs2, 'fs2', 10);
-
-
-%% GP - Derivative and Function Observations with Global GP
-% global GP
-global global_mean_func;
-global global_cov_func;
-global global_lik_func;
-global global_inf_method;
-global global_hyp;
-global global_x;
-global global_y;
-
-% global_mean_func    = @meanZero;
-% global_cov_func     = {@covSEiso}; %{@covMaterniso, 3}
-% global_lik_func     = @likGauss;
-% global_inf_method   = @infExact;
-% global_hyp          = hyp1;
-% global_x            = x;
-% global_y            = y;
-
-global_mean_func    = @meanZeroDerObs;
-global_cov_func     = {@covSEisoDerObs};
-global_lik_func     = @likGaussDerObs;
-global_inf_method   = @infExactDerObs;
-global_hyp          = hyp1;
-global_hyp.lik(2)   = global_hyp.lik(1);
-global_x            = [zeros(length(x), 1), x];
-global_y            = y;
-
-% local GP
-mean_func = @meanGP; % Global GP 
-
-% hyperparameter
-hyp.cov = log([ell, sf]);
-hyp.lik = log([sn, sn]);
-
-% training
-hyp3 = minimize(hyp, @gp, -100, inf_method, mean_func, cov_func, lik_func, xxd, yyd);
-[nlZ3, dnlZ3] = gp(hyp3, inf_method, mean_func, cov_func, lik_func, xxd, yyd);
-disp(['hyp3.cov.ell = ',        num2str(exp(hyp3.cov(1)), precision)]);
-disp(['hyp3.cov.sf = ',         num2str(exp(hyp3.cov(2)), precision)]);
-disp(['hyp3.lik.sigma_n = ',    num2str(exp(hyp3.lik(1)), precision)]);
-disp(['hyp3.lik.sigma_nd = ',   num2str(exp(hyp3.lik(2)), precision)]);
-disp(['nlZ3 = ',                num2str(nlZ3, precision)]);
-disp(['dnlZ3.cov.ell = ',       num2str(dnlZ3.cov(1), precision)]);
-disp(['dnlZ3.cov.sf = ',        num2str(dnlZ3.cov(2), precision)]);
-disp(['dnlZ3.lik.sigma_n = ',   num2str(dnlZ3.lik(1), precision)]);
-disp(['dnlZ3.lik.sigma_nd = ',  num2str(dnlZ3.lik(2), precision)]);
-
-% prediction - regression
-[dummy, dummy, fmu, fs2] = gp(hyp3, inf_method, mean_func, cov_func, lik_func, xxd, yyd, xs);
-
-% plot
-subplot(1, 4, 4);
+subplot(1, 3, 3);
 hold on;
 ff = [fmu+2*sqrt(fs2); flipdim(fmu-2*sqrt(fs2),1)]; 
 fill([xs; flipdim(xs,1)], ff, [7 7 7]/8)
